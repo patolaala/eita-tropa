@@ -1,152 +1,99 @@
-# eita-tropa
-//variáveis da bolinha
-let xBolinha = 300;
-let yBolinha = 200;
-let diametro = 15;
-let raio = diametro / 2 ;
+// Variáveis para a bola
+let ballX;
+let ballY;
+let ballSpeedX;
+let ballSpeedY;
+let ballSize = 20;
 
-//velocidade da bolinha
-let velocidadeXBolinha = 3;
-let velocidadeYBolinha = 3;
+// Variáveis para as paletas
+let leftPaddle;
+let rightPaddle;
+let paddleWidth = 10;
+let paddleHeight = 80;
+let paddleSpeed = 5;
 
-//sons do jogo
-let raquetada
-let ponto
-
-
-function preload(){
-
-trilha = loadSound("trilha.mp3");
-ponto = loadSound("ponto.mp3");
- raquetada = loadSound("raquetada.mp3");
-
-}
-
-
-//variáveis da raquete
-let xRaquete = 5;
-let yRaquete = 150;
-let raqueteComprimento = 10;
-let raqueteAltura = 90;
-let colidiu = false;
-
-//Placar do jogo
-let meusPontos = 0;
-let pontosDoOponente = 0;
-
-//variaveis do oponente 
-let xRaqueteOponente = 585
-let yRaqueteOponente = 150
-let velocidadeYOponente;
+// Pontuações
+let leftScore = 0;
+let rightScore = 0;
 
 function setup() {
   createCanvas(600, 400);
-  trilha.loop()
+  // Inicializa a bola no centro
+  ballX = width / 2;
+  ballY = height / 2;
+  // Inicializa as paletas nas extremidades
+  leftPaddle = height / 2 - paddleHeight / 2;
+  rightPaddle = height / 2 - paddleHeight / 2;
+  // Inicializa a velocidade da bola
+  resetBall();
 }
 
 function draw() {
   background(0);
-  mostraBolinha();
-  movimentaBolinha();
-  verificaColisaoBorda();
-  movimentaMinhaRaquete();
-  verificaColisaoRaquete(xRaquete, yRaquete);
-  mostraRaquete(xRaquete, yRaquete);
-  mostraRaquete(xRaqueteOponente, yRaqueteOponente);
-  movimenteRaqueteOponente();
-  verificaColisaoRaquete(xRaqueteOponente, yRaqueteOponente)
- incluiPlacar(); 
-  marcaPonto();
   
- 
+  // Desenha as paletas
+  fill(255);
+  rect(0, leftPaddle, paddleWidth, paddleHeight);
+  rect(width - paddleWidth, rightPaddle, paddleWidth, paddleHeight);
   
- 
+  // Desenha a bola
+  fill(255);
+  ellipse(ballX, ballY, ballSize, ballSize);
+  
+  // Move as paletas
+  movePaddles();
+  
+  // Move a bola
+  moveBall();
+  
+  // Verifica colisões com as paletas
+  checkPaddleCollision();
+  
+  // Verifica colisões com as bordas
+  checkEdgeCollision();
+  
+  // Exibe pontuações
+  fill(255);
+  textSize(32);
+  text(leftScore, width / 4, 50);
+  text(rightScore, 3 * width / 4, 50);
 }
 
-function mostraBolinha(){
-  circle(xBolinha, yBolinha, diametro);
-}
-
-function movimentaBolinha(){
-  xBolinha += velocidadeXBolinha;
-  yBolinha += velocidadeYBolinha;
-}
-
-function verificaColisaoBorda(){
-  if (xBolinha + raio> width ||
-     xBolinha - raio< 0){
-    velocidadeXBolinha *= -1;
+function movePaddles() {
+  if (keyIsDown(87)) { // W
+    leftPaddle -= paddleSpeed;
   }
-  if (yBolinha + raio> height ||
-     yBolinha - raio < 0){
-    velocidadeYBolinha *= -1;
+  if (keyIsDown(83)) { // S
+    leftPaddle += paddleSpeed;
+  }
+  if (keyIsDown(UP_ARROW)) {
+    rightPaddle -= paddleSpeed;
+  }
+  if (keyIsDown(DOWN_ARROW)) {
+    rightPaddle += paddleSpeed;
+  }
+  // Limita as paletas dentro da tela
+  leftPaddle = constrain(leftPaddle, 0, height - paddleHeight);
+  rightPaddle = constrain(rightPaddle, 0, height - paddleHeight);
+}
+
+function moveBall() {
+  ballX += ballSpeedX;
+  ballY += ballSpeedY;
+}
+
+function resetBall() {
+  ballX = width / 2;
+  ballY = height / 2;
+  ballSpeedX = random(-2, 2);
+  ballSpeedY = random(-5, 6);
+}
+
+function checkPaddleCollision() {
+  if (ballX - ballSize / 2 < paddleWidth && ballY > leftPaddle && ballY < leftPaddle + paddleHeight) {
+    ballSpeedX = abs(ballSpeedX); // Inverte a direção horizontal
+  }
+  if (ballX + ballSize / 2 > width - paddleWidth && ballY > rightPaddle && ballY < rightPaddle + paddleHeight) {
+    ballSpeedX = -abs(ballSpeedX); // Inverte a direção horizontal
   }
 }
-function mostraRaquete(x,y){
-rect (x, y, raqueteComprimento, raqueteAltura)
-}
-
-
-
-function movimentaRaqueteOponente() {
-    if (keyIsDown(87)) {
-        yRaqueteOponente -= 10;
-    }
-    if (keyIsDown(83)) {
-        yRaqueteOponente += 10;
-
-    }
-}
-
-function movimentaMinhaRaquete() {
-    if (keyIsDown(UP_ARROW)) {
-        yRaquete -= 10;
-    }
-    if (keyIsDown(DOWN_ARROW)) {
-        yRaquete += 10;
-   
-  }
-    }
-
-  function verificaColisaoRaquete(x, y) {
-    colidiu = collideRectCircle(x, y, raqueteComprimento, raqueteAltura, xBolinha, yBolinha, raio);
-    if (colidiu) {
-        velocidadeXBolinha *= -1;
-      raquetada.play()
-    }
-  }
-
-function  movimenteRaqueteOponente(){
- velocidadeYOponente = yBolinha - yRaqueteOponente - raqueteComprimento /2 -30;
-  yRaqueteOponente += velocidadeYOponente
-  
-}
-function incluiPlacar(){
-    stroke(255);
-    textAlign(CENTER);
-    textSize(16);
-    fill(color(255, 140, 0));
-    rect(150, 10, 40, 20);
-    fill(255);
-    text(meusPontos, 170, 26);
-    fill(color(255, 140, 0));
-    rect(450, 10, 40, 20);
-    fill(255);
-    text(pontosDoOponente, 470, 26);
-}
-
-
-function marcaPonto() {
-    if (xBolinha > 591) {
-        meusPontos += 1;
-      ponto.play()
-    }
-    if (xBolinha < 9) {
-        pontosDoOponente += 1;
-      ponto.play()
-    }
-}
-  
-
-  
- 
